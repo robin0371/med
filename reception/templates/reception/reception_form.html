@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Запись на прием к врачу</title>
+
+    {% load staticfiles %}
+    <link rel="stylesheet" href="{% static "css/bootstrap-theme.min.css" %}"/>
+    <link rel="stylesheet" href="{% static "css/bootstrap-datetimepicker.min.css" %}"/>
+    <link rel="stylesheet" href="{% static "css/style.css" %}"/>
+
+    <script src="{% static "js/moment.min.js" %}" /></script>
+    <script src="{% static "js/moment-with-locales.min.js" %}" /></script>
+    <script src="{% static "js/jquery.min.js" %}"></script>
+    <script src="{% static "js/bootstrap-datetimepicker.min.js" %}"></script>
+
+    {% load bootstrap3 %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+</head>
+<body>
+
+
+<div class="wrap">
+    <div class="wrapper">
+        <form action="" method="post" class="form-group">
+            {% csrf_token %}
+            {% bootstrap_form form %}
+            {% buttons %}
+                <button type="submit" class="btn btn-primary">
+                        {% bootstrap_icon "button" %} Записаться
+                </button>
+            {% endbuttons %}
+        </form>
+    </div>
+</div>
+</body>
+
+</html>

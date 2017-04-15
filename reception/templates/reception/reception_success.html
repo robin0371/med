@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Карточка на прием успешно создана</title>
+
+    {% load staticfiles %}
+    <link rel="stylesheet" href="{% static "css/bootstrap-theme.min.css" %}"/>
+    <link rel="stylesheet" href="{% static "css/bootstrap-datetimepicker.min.css" %}"/>
+    <link rel="stylesheet" href="{% static "css/style.css" %}"/>
+
+    <script src="{% static "js/moment.min.js" %}" /></script>
+    <script src="{% static "js/moment-with-locales.min.js" %}" /></script>
+    <script src="{% static "js/jquery.min.js" %}"></script>
+    <script src="{% static "js/bootstrap-datetimepicker.min.js" %}"></script>
+
+    {% load bootstrap3 %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+</head>
+<body>
+
+<div class="wrap">
+    <div class="wrapper">
+        {% bootstrap_label "Карточка на прием к врачу успешно создана" %}
+        <br>
+        <a href="/reception/new" class="btn btn-primary">Записаться на прием</a>
+    </div>
+</div>
+
+</body>
+
+</html>
