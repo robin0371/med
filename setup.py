@@ -1,7 +1,7 @@
 import os
 from pip.download import PipSession
 from pip.req.req_file import parse_requirements
-from setuptools import setup, find_packages
+from setuptools import setup
 
 
 def get_requirements(file_name):
@@ -20,10 +20,8 @@ setup(
     version='0.1',
     description='Приложение формы записи к врачу',
     long_description=read('README.rst'),
-    # package_dir={'': 'src'},
-    # packages=find_packages('src'),
     install_requires=get_requirements('requirements/base.txt'),
-    license='MIT',
+    license='MIT License',
     keywords='med form reception',
     author='Lashmanov Vitaly',
     author_email='lashmanov.vitaly@gmail.ru',
