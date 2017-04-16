@@ -15,6 +15,6 @@ class ReceptionForm(forms.ModelForm):
         widgets = {
             'date': DateTimePicker(
                 options={
-                    "format": "DD.MM.YY",
+                    "format": "DD.MM.YYYY",
                 }),
         }
