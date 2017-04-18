@@ -1,6 +1,6 @@
 import datetime
+import json
 
-from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 
@@ -71,7 +71,7 @@ class AddReceptionCase(TestCase):
     def test_create_reception_in_time_off(self):
         """Тест создания карточки приема в не рабочее время."""
         doctor = Doctor.objects.get(surname='Александров')
-        tuesday = get_next_weekday(datetime.date.today(), 1)
+        tuesday = get_next_weekday(datetime.date.today(), 1)  # Вторник
         time = 999  # Не рабочее время
         patient = 'Иванов Иван Иванович'
 
@@ -114,52 +114,102 @@ class SmokeReceptionCase(TestCase):
 
         self.assertEqual(response.status_code, 200)
 
+    def test_redirect_to_new_reception(self):
+        """Тест представления для перенаправления."""
+        response = self.client.get('/')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, 'reception/new')
 
-class AdminPanelCase(TestCase):
-    """Набор тестов панели администрирования."""
+
+class AddReceptionViewsCase(TestCase):
+    """Набор тестов представлений."""
 
     def setUp(self):
-        username = 'admin'
-        password = User.objects.make_random_password()
-
-        user, created = User.objects.get_or_create(username=username)
-        user.set_password(password)
-        user.is_staff = True
-        user.is_superuser = True
-        user.is_active = True
-        user.save()
-
-        self.client.login(username=username, password=password)
-
-    def test_receptions_in_admin_panel(self):
-        """Список карточек приема к врачу в админке."""
-        doctor = Doctor.objects.create(
+        Doctor.objects.create(
             name='Иван', surname='Александров', patronymic='Петрович')
+
+    def test_doctor_free_time_busy_test(self):
+        """Тест представления получения свободного времени приема врача.
+        
+        По условию в понедельник у врача заняты часы приема с 9:00 до 13:00.
+        """
+        doctor = Doctor.objects.get(surname='Александров')
         monday = get_next_weekday(datetime.date.today(), 0)
-        time = Reception.TIME_CHOICES[0][0]  # 9:00
-        patient = 'Иванов Иван Иванович'
+        busy_times = (
+            Reception.TIME_CHOICES[0][0],  # 9:00
+            Reception.TIME_CHOICES[1][0],  # 10:00
+            Reception.TIME_CHOICES[2][0],  # 11:00
+            Reception.TIME_CHOICES[3][0],  # 12:00
+        )
+        ivanov_ii = 'Иванов Иван Иванович'
 
-        reception = Reception.objects.create(
-            doctor=doctor, date=monday, time=time, fio=patient)
+        # Создаем расписание врача Александрова И.П на понедельник,
+        # занятое с 9:00 до 13:00
+        for time in busy_times:
+            Reception.objects.create(
+                doctor=doctor, date=monday, time=time, fio=ivanov_ii)
 
-        response = self.client.get('/admin/reception/reception/')
-
-        # Проверка, что успешно прошел переход на страницу списка карточек
-        # приема к врачу и на странице есть созданная карточка.
+        # Отправляем запрос для получения свободного времени приема врача
+        response = self.client.get(
+            '/reception/get-free-time-choices/',
+            {'doctor_id': doctor.id, 'date': monday.strftime('%d.%m.%Y')})
         self.assertEqual(response.status_code, 200)
-        self.assertNotEqual(response.rendered_content.find(str(reception)), -1)
 
-    def test_doctors_in_admin_panel(self):
-        """Список врачей в админке."""
-        Doctor.objects.bulk_create([
-            Doctor(name='Иван', surname='Александров', patronymic='Петрович'),
-            Doctor(name='Андрей', surname='Петров', patronymic='Петрович')
-        ])
+        content = json.loads(response.content.decode('utf-8'))
 
-        response = self.client.get('/admin/reception/doctor/')
+        self.assertEqual(
+            response.content,
+            b'{"free_time": [[4, "13:00"], [5, "14:00"], [6, "15:00"], '
+            b'[7, "16:00"], [8, "17:00"]]}')
 
-        # Проверка, что успешно прошел переход на страницу списка врачей
-        # и на странице есть созданные врачи.
+        self.assertEqual(
+            content['free_time'][0][0], Reception.TIME_CHOICES[4][0])  # 13:00
+        self.assertEqual(
+            content['free_time'][1][0], Reception.TIME_CHOICES[5][0])  # 14:00
+        self.assertEqual(
+            content['free_time'][2][0], Reception.TIME_CHOICES[6][0])  # 15:00
+        self.assertEqual(
+            content['free_time'][3][0], Reception.TIME_CHOICES[7][0])  # 16:00
+        self.assertEqual(
+            content['free_time'][4][0], Reception.TIME_CHOICES[8][0])  # 17:00
+
+    def test_doctor_free_time_test(self):
+        """Тест представления получения свободного времени приема врача.
+
+        По условию во вторник у врача не заняты часы приема.
+        """
+        doctor = Doctor.objects.get(surname='Александров')
+        tuesday = get_next_weekday(datetime.date.today(), 1)  # Вторник
+
+        # Отправляем запрос для получения свободного времени приема врача
+        response = self.client.get(
+            '/reception/get-free-time-choices/',
+            {'doctor_id': doctor.id, 'date': tuesday.strftime('%d.%m.%Y')})
         self.assertEqual(response.status_code, 200)
-        self.assertNotEqual(response.rendered_content.find('Александров'), -1)
-        self.assertNotEqual(response.rendered_content.find('Петров'), -1)
+
+        content = json.loads(response.content.decode('utf-8'))
+
+        self.assertEqual(
+            response.content,
+            b'{"free_time": [[0, "09:00"], [1, "10:00"], [2, "11:00"], '
+            b'[3, "12:00"], [4, "13:00"], [5, "14:00"], [6, "15:00"], '
+            b'[7, "16:00"], [8, "17:00"]]}')
+
+        self.assertEqual(
+            content['free_time'][0][0], Reception.TIME_CHOICES[0][0])  # 09:00
+        self.assertEqual(
+            content['free_time'][1][0], Reception.TIME_CHOICES[1][0])  # 10:00
+        self.assertEqual(
+            content['free_time'][2][0], Reception.TIME_CHOICES[2][0])  # 11:00
+        self.assertEqual(
+            content['free_time'][3][0], Reception.TIME_CHOICES[3][0])  # 12:00
+        self.assertEqual(
+            content['free_time'][4][0], Reception.TIME_CHOICES[4][0])  # 13:00
+        self.assertEqual(
+            content['free_time'][5][0], Reception.TIME_CHOICES[5][0])  # 14:00
+        self.assertEqual(
+            content['free_time'][6][0], Reception.TIME_CHOICES[6][0])  # 15:00
+        self.assertEqual(
+            content['free_time'][7][0], Reception.TIME_CHOICES[7][0])  # 16:00
+        self.assertEqual(
+            content['free_time'][8][0], Reception.TIME_CHOICES[8][0])  # 17:00
