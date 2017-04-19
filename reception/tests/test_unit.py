@@ -5,23 +5,7 @@ from django.core.exceptions import ValidationError
 from django.test import TestCase
 
 from reception.models import Doctor, Reception
-
-
-def get_next_weekday(date, weekday):
-    """Возвращает день weekday из следующей недели.
-
-    :param date: Дата, после которой найти день недели
-    :type date: datetime.date
-    :param weekday: Порядковый номер дня недели
-    :type weekday: int
-
-    :rtype datetime.date
-    """
-    days_ahead = weekday - date.weekday()
-    if days_ahead <= 0:
-        days_ahead += 7
-
-    return date + datetime.timedelta(days_ahead)
+from reception.tests.utils import get_next_weekday
 
 
 class AddReceptionCase(TestCase):
@@ -30,6 +14,7 @@ class AddReceptionCase(TestCase):
     def setUp(self):
         Doctor.objects.create(
             name='Иван', surname='Александров', patronymic='Петрович')
+        super(AddReceptionCase, self).setUp()
 
     def test_create_reception(self):
         """Тест создания карточки приема с валидными данными."""
@@ -88,7 +73,7 @@ class AddReceptionCase(TestCase):
         ivanov_ii = 'Иванов Иван Иванович'
         petrov_ad = 'Петров Александр Дмитриевич'
 
-        # Карточка приема пациента Иванова И.И. на понедельник (17.04.2017)
+        # Карточка приема пациента Иванова И.И. на понедельник
         # к врачу Александрову И.П. на 9:00
         Reception.objects.create(
             doctor=doctor, date=monday, time=time, fio=ivanov_ii)
@@ -127,8 +112,9 @@ class ReceptionFreeTimeCase(TestCase):
     def setUp(self):
         Doctor.objects.create(
             name='Иван', surname='Александров', patronymic='Петрович')
+        super(ReceptionFreeTimeCase, self).setUp()
 
-    def test_doctor_free_time_busy_test(self):
+    def test_doctor_free_time_busy(self):
         """Тест представления получения свободного времени приема врача.
         
         По условию в понедельник у врача заняты часы приема с 9:00 до 13:00.
@@ -174,7 +160,7 @@ class ReceptionFreeTimeCase(TestCase):
         self.assertEqual(
             content['free_time'][4][0], Reception.TIME_CHOICES[8][0])  # 17:00
 
-    def test_doctor_free_time_test(self):
+    def test_doctor_free_time(self):
         """Тест представления получения свободного времени приема врача.
 
         По условию во вторник у врача не заняты часы приема.
@@ -216,7 +202,7 @@ class ReceptionFreeTimeCase(TestCase):
         self.assertEqual(
             content['free_time'][8][0], Reception.TIME_CHOICES[8][0])  # 17:00
 
-    def test_doctor_all_busy_time_test(self):
+    def test_doctor_all_busy_time(self):
         """Тест представления получения свободного времени приема врача.
 
         По условию во вторник у врача заняты все часы приема.
