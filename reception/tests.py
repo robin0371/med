@@ -121,8 +121,8 @@ class SmokeReceptionCase(TestCase):
         self.assertEqual(response.url, 'reception/new')
 
 
-class AddReceptionViewsCase(TestCase):
-    """Набор тестов представлений."""
+class ReceptionFreeTimeCase(TestCase):
+    """Набор тестов представления получения свободного времени приема врача."""
 
     def setUp(self):
         Doctor.objects.create(
@@ -153,6 +153,7 @@ class AddReceptionViewsCase(TestCase):
         response = self.client.get(
             '/reception/get-free-time-choices/',
             {'doctor_id': doctor.id, 'date': monday.strftime('%d.%m.%Y')})
+
         self.assertEqual(response.status_code, 200)
 
         content = json.loads(response.content.decode('utf-8'))
@@ -185,6 +186,7 @@ class AddReceptionViewsCase(TestCase):
         response = self.client.get(
             '/reception/get-free-time-choices/',
             {'doctor_id': doctor.id, 'date': tuesday.strftime('%d.%m.%Y')})
+
         self.assertEqual(response.status_code, 200)
 
         content = json.loads(response.content.decode('utf-8'))
@@ -213,3 +215,42 @@ class AddReceptionViewsCase(TestCase):
             content['free_time'][7][0], Reception.TIME_CHOICES[7][0])  # 16:00
         self.assertEqual(
             content['free_time'][8][0], Reception.TIME_CHOICES[8][0])  # 17:00
+
+    def test_doctor_all_busy_time_test(self):
+        """Тест представления получения свободного времени приема врача.
+
+        По условию во вторник у врача заняты все часы приема.
+        """
+        doctor = Doctor.objects.get(surname='Александров')
+        tuesday = get_next_weekday(datetime.date.today(), 1)  # Вторник
+        busy_times = (
+            Reception.TIME_CHOICES[0][0],  # 9:00
+            Reception.TIME_CHOICES[1][0],  # 10:00
+            Reception.TIME_CHOICES[2][0],  # 11:00
+            Reception.TIME_CHOICES[3][0],  # 12:00
+            Reception.TIME_CHOICES[4][0],  # 13:00
+            Reception.TIME_CHOICES[5][0],  # 14:00
+            Reception.TIME_CHOICES[6][0],  # 15:00
+            Reception.TIME_CHOICES[7][0],  # 16:00
+            Reception.TIME_CHOICES[8][0],  # 17:00
+        )
+        ivanov_ii = 'Иванов Иван Иванович'
+
+        # Создаем расписание врача Александрова И.П на вторник,
+        # все часы приема заняты.
+        for time in busy_times:
+            Reception.objects.create(
+                doctor=doctor, date=tuesday, time=time, fio=ivanov_ii)
+
+        # Отправляем запрос для получения свободного времени приема врача
+        response = self.client.get(
+            '/reception/get-free-time-choices/',
+            {'doctor_id': doctor.id, 'date': tuesday.strftime('%d.%m.%Y')})
+
+        self.assertEqual(response.status_code, 200)
+
+        content = json.loads(response.content.decode('utf-8'))
+
+        self.assertEqual(response.content, b'{"free_time": []}')
+
+        self.assertEqual(content['free_time'], [])  # Не свободных часов
