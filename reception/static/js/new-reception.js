@@ -33,7 +33,6 @@ function getFreeTimeChoices(doctor_id, date) {
 
     // Заполняет поле выбора времени приема свободными значениями времени врача
     function setFreeTimeChoices(data) {
-        $('#id_time option[value!=""]').remove();
 
         $(data.free_time).each(function (i) {
             var value = data.free_time[i][0],
