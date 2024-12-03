@@ -1,6 +1,6 @@
 from django import forms
 
-from bootstrap3_datetime.widgets import DateTimePicker
+from bootstrap_datepicker_plus.widgets import DatePickerInput
 
 from reception.models import Reception
 
@@ -13,7 +13,7 @@ class ReceptionForm(forms.ModelForm):
         fields = '__all__'
 
         widgets = {
-            'date': DateTimePicker(
+            'date': DatePickerInput(
                 options={
                     "format": "DD.MM.YYYY",
                 }),

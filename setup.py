@@ -1,13 +1,13 @@
 import os
-from pip.download import PipSession
-from pip.req.req_file import parse_requirements
+import pathlib
+import pkg_resources
 from setuptools import setup
 
 
 def get_requirements(file_name):
     """Возвращает список зависимостей med."""
-    requirements = parse_requirements(file_name, session=PipSession())
-    return [str(ir.req) for ir in requirements]
+    with pathlib.Path(file_name).open() as req_file:
+        return [str(r) for r in pkg_resources.parse_requirements(req_file)]
 
 
 def read(file_name):
@@ -19,6 +19,7 @@ setup(
     name='med',
     version='0.1',
     description='Приложение формы записи к врачу',
+    package_dir={'': 'reception'},
     long_description=read('README.rst'),
     install_requires=get_requirements('requirements/base.txt'),
     license='MIT License',

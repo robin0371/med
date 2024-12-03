@@ -32,7 +32,10 @@ class CreateReceptionRedirectView(RedirectView):
 def doctor_free_times(request):
     """Представление для получения свободного времени приема врача на дату."""
     doctor_id = int(request.GET['doctor_id'])
+    print('!!!!!!!!111111111')
+    print(request.GET['date'])
     date = datetime.datetime.strptime(request.GET['date'], "%d.%m.%Y")
+    print(date)
 
     busy_times = Reception.objects.filter(
         doctor=doctor_id, date=date).values_list('time', flat=True)

@@ -1,14 +1,14 @@
-FROM python:3.5
+FROM python:3.12
 MAINTAINER Lashmanov Vitaly <lashmanov.vitaly@gmail.ru>
 
-COPY . /opt/med
+ARG APP=/opt/med
 
-WORKDIR /opt/med
-
+COPY ./requirements/base.txt $APP/requirements.txt
+RUN pip install -U pip && pip install -r $APP/requirements.txt
 ENV DJANGO_SETTINGS_MODULE med.settings
 
-RUN pip install -U pip
-RUN pip install -r requirements/base.txt
-RUN python setup.py install
+WORKDIR $APP
+COPY . $APP
+RUN python setup.py install && python manage.py migrate
 
 CMD python manage.py runserver 0.0.0.0:8000

@@ -34,7 +34,7 @@ class Reception(models.Model):
         (8, '17:00'),
     )
 
-    doctor = models.ForeignKey(Doctor, verbose_name='К врачу')
+    doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, verbose_name='К врачу')
     date = models.DateField(
         'Дата', validators=[validate_week_day, validate_not_past_date])
     time = models.PositiveSmallIntegerField('Время', choices=TIME_CHOICES)

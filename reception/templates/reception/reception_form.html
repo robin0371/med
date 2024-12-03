@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Запись на прием к врачу</title>
 
-    {% load staticfiles %}
+    {% load static %}
     <link rel="stylesheet" href="{% static "css/bootstrap-theme.min.css" %}"/>
     <link rel="stylesheet" href="{% static "css/bootstrap-datetimepicker.min.css" %}"/>
     <link rel="stylesheet" href="{% static "css/style.css" %}"/>
@@ -14,9 +14,10 @@
     <script src="{% static "js/jquery.min.js" %}"></script>
     <script src="{% static "js/bootstrap-datetimepicker.min.js" %}"></script>
 
-    {% load bootstrap3 %}
+    {% load bootstrap4 %}
     {% bootstrap_css %}
     {% bootstrap_javascript %}
+    {{ form.media }}
 </head>
 <body>
 <div class="wrap">
@@ -25,9 +26,7 @@
             {% csrf_token %}
             {% bootstrap_form form %}
             {% buttons %}
-                <button type="submit" class="btn btn-primary">
-                        {% bootstrap_icon "button" %} Записаться
-                </button>
+                <button type="submit" class="btn btn-primary">Записаться</button>
             {% endbuttons %}
         </form>
     </div>

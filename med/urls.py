@@ -13,7 +13,7 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.conf.urls import url
+from django.urls import include, re_path
 from django.contrib import admin
 
 from reception.views import (
@@ -21,10 +21,10 @@ from reception.views import (
     doctor_free_times)
 
 urlpatterns = [
-    url(r'^admin/', admin.site.urls),
+    re_path(r'^admin/', admin.site.urls),
 
-    url(r'^$', CreateReceptionRedirectView.as_view()),
-    url(r'^reception/new/', CreateReception.as_view()),
-    url(r'^reception/success/', reception_success),
-    url(r'^reception/get-free-time-choices/', doctor_free_times)
+    re_path(r'^$', CreateReceptionRedirectView.as_view()),
+    re_path(r'^reception/new/', CreateReception.as_view()),
+    re_path(r'^reception/success/', reception_success),
+    re_path(r'^reception/get-free-time-choices/', doctor_free_times)
 ]
