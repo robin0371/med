@@ -16,28 +16,16 @@ class Doctor(models.Model):
         verbose_name_plural = 'Врачи'
 
     def __str__(self):
-        return '{self.surname} {self.name} {self.patronymic}'.format(self=self)
+        return f'{self.surname} {self.name} {self.patronymic}'
 
 
 class Reception(models.Model):
     """Карточка записи на прием."""
 
-    TIME_CHOICES = (
-        (0, '09:00'),
-        (1, '10:00'),
-        (2, '11:00'),
-        (3, '12:00'),
-        (4, '13:00'),
-        (5, '14:00'),
-        (6, '15:00'),
-        (7, '16:00'),
-        (8, '17:00'),
-    )
-
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, verbose_name='К врачу')
     date = models.DateField(
         'Дата', validators=[validate_week_day, validate_not_past_date])
-    time = models.PositiveSmallIntegerField('Время', choices=TIME_CHOICES)
+    time = models.TimeField('Время посещения', auto_now_add=False, default='09:00')
     fio = models.CharField('ФИО', max_length=150)
 
     class Meta:
@@ -47,9 +35,5 @@ class Reception(models.Model):
         unique_together = 'doctor', 'date', 'time'
 
     def __str__(self):
-        return '{self.doctor}: {self.date} {self.verbose_time}'.format(
-            self=self)
+        return f'{self.doctor}: {self.date} {self.time}'
 
-    @property
-    def verbose_time(self):
-        return dict(self.TIME_CHOICES).get(self.time)

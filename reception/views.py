@@ -34,14 +34,10 @@ def doctor_free_times(request):
     doctor_id = int(request.GET['doctor_id'])
     date = datetime.datetime.strptime(request.GET['date'], "%d.%m.%Y")
 
-    busy_times = Reception.objects.filter(
+    busy_time = Reception.objects.filter(
         doctor=doctor_id, date=date).values_list('time', flat=True)
 
-    if busy_times.exists():
-        free_time = [t for t in Reception.TIME_CHOICES
-                     if t[0] not in busy_times]
-    else:
-        free_time = list(Reception.TIME_CHOICES)
 
     return HttpResponse(
-        json.dumps({'free_time': free_time}), content_type='application/json')
+        json.dumps({'busy_time': [str(bt) for bt in busy_time]}), content_type='application/json')
+
